@@ -2,14 +2,6 @@
 
 A beautiful Java 21 web application built with Spring Boot that displays ArtisanTek branding with modern UI design.
 
-## Features
-
-- ✨ Beautiful gradient background with animations
-- 🎨 Modern glassmorphism design
-- 📱 Responsive layout for mobile and desktop
-- 🚀 Java 21 with Spring Boot 3.2
-- 🎯 Lightweight and fast
-
 ## Prerequisites
 
 - Java 21 JDK
