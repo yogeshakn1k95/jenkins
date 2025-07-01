@@ -19,14 +19,48 @@ pipeline {
             }
         }
         
-        stage('Test') {
+        stage('Tests') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        echo '🧪 Running unit tests...'
+                        dir('javaapp-pipeline') {
+                            sh '''
+                                echo "Starting test execution..."
+                                mvn clean test
+                            '''
+                        }
+                    }
+                }
+
+                stage('Trivy Scan') {
+                    steps {
+                        echo '🔒 Running Trivy security scan...'
+                        dir('javaapp-pipeline') {
+                            sh '''
+                                echo "Starting Trivy filesystem scan..."
+                                wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -O html.tpl
+                                trivy fs --format template --template "@html.tpl" -o trivy-report.html .
+                                echo "Trivy scan completed. Report: trivy-report.html"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Sonar Analysis') {
             steps {
-                echo '🧪 Running unit tests...'
+                echo '📊 Running SonarQube analysis...'
                 dir('javaapp-pipeline') {
-                    sh '''
-                        echo "Starting test execution..."
-                        mvn clean test
-                    '''
+                    withSonarQubeEnv('sonar') {
+                        sh '''
+                            echo "Starting SonarQube analysis..."
+                            mvn verify sonar:sonar \
+                                -Dsonar.projectKey=javaapp \
+                                -Dsonar.projectName=javaapp \
+                        '''
+                    }
                 }
             }
         }
@@ -37,7 +71,7 @@ pipeline {
                 dir('javaapp-pipeline') {
                     sh '''
                         echo "Building JAR file..."
-                        mvn clean package -DskipTests=true
+                        mvn package -DskipTests=true
                     '''
                 }
             }
