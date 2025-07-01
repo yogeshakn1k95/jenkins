@@ -40,9 +40,10 @@ public class MainTest {
         JavalinTest.test(app, (server, client) -> {
             var response = client.get("/");
             assertEquals(200, response.code(), "Should return 200 OK status");
-            assertTrue(response.body().string().contains("ArtisanTek"), 
+            String responseBody = response.body().string();
+            assertTrue(responseBody.contains("ArtisanTek"), 
                 "Response should contain 'ArtisanTek' text");
-            assertTrue(response.body().string().contains("May2025"), 
+            assertTrue(responseBody.contains("May2025"), 
                 "Response should contain 'May2025' text");
         });
     }
@@ -64,8 +65,11 @@ public class MainTest {
     void shouldHandleFaviconRequests() {
         JavalinTest.test(app, (server, client) -> {
             var response = client.get("/favicon.ico");
-            // Should return 404 for favicon since we don't have one configured
-            assertEquals(404, response.code(), "Should return 404 for favicon");
+            // SPA configuration serves index.html for all routes, including favicon
+            assertEquals(200, response.code(), "Should return 200 for favicon (SPA behavior)");
+            String responseBody = response.body().string();
+            assertTrue(responseBody.contains("ArtisanTek"), 
+                "Should serve index.html content for favicon request");
         });
     }
 
@@ -76,7 +80,8 @@ public class MainTest {
             var response = client.get("/nonexistent");
             // Should return the SPA root (index.html) for any non-existent route
             assertEquals(200, response.code(), "Should return 200 for SPA routing");
-            assertTrue(response.body().string().contains("ArtisanTek"), 
+            String responseBody = response.body().string();
+            assertTrue(responseBody.contains("ArtisanTek"), 
                 "Should serve index.html for non-existent routes");
         });
     }
