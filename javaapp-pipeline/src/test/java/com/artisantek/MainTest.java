@@ -15,10 +15,8 @@ public class MainTest {
 
     @BeforeEach
     void setUp() {
-        // Create a test instance of the Javalin app
-        app = Javalin.create(config -> {
-            config.spaRoot.addFile("/", "/public/index.html", io.javalin.http.staticfiles.Location.CLASSPATH);
-        });
+        // Use the actual Main.createApp() method for testing
+        app = Main.createApp();
     }
 
     @AfterEach
@@ -26,6 +24,14 @@ public class MainTest {
         if (app != null) {
             app.stop();
         }
+    }
+
+    @Test
+    @DisplayName("Should create app using Main.createApp() method")
+    void shouldCreateAppUsingMainCreateAppMethod() {
+        Javalin testApp = Main.createApp();
+        assertNotNull(testApp, "Main.createApp() should return a non-null Javalin instance");
+        testApp.stop(); // Clean up
     }
 
     @Test
