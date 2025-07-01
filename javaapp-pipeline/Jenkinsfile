@@ -22,7 +22,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo '🧪 Running unit tests...'
-                dir('java-21-pipeline') {
+                dir('javaapp-pipeline') {
                     sh '''
                         echo "Starting test execution..."
                         mvn clean test
@@ -34,7 +34,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🏗️ Building application...'
-                dir('java-21-pipeline') {
+                dir('javaapp-pipeline') {
                     sh '''
                         echo "Building JAR file..."
                         mvn clean package -DskipTests=true
@@ -46,7 +46,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo '🚀 Deploying application...'
-                dir('java-21-pipeline/target') {
+                dir('javaapp-pipeline/target') {
                     script {
                         // Stop any existing application process
                         sh '''
