@@ -6,10 +6,10 @@ pipeline {
         APP_PORT = '5000'
     }
     
-    tools {
-        maven 'Maven-3.9.0'
-        jdk 'JDK-21'
-    }
+    // tools {
+    //     maven 'Maven-3.9.0'
+    //     jdk 'JDK-21'
+    // }
     
     stages {
         stage('Checkout') {
