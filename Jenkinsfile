@@ -1,14 +1,14 @@
 pipeline {
     agent any
 
-    environment {
-        APP_SERVER = "3.110.201.22"
-        USER = "ec2-user"
-        JAR_NAME = "java-sample-21-1.0.0.jar"
-        APP_DIR = "/opt/myapp"
-        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
-    }
+    // environment {
+    //     APP_SERVER = "3.110.201.22"
+    //     USER = "ec2-user"
+    //     JAR_NAME = "java-sample-21-1.0.0.jar"
+    //     APP_DIR = "/opt/myapp"
+    //     JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
+    //     PATH = "${JAVA_HOME}/bin:${env.PATH}"
+    // }
 
     stages {
 
