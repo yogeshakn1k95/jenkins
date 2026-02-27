@@ -1,64 +1,39 @@
-// pipeline in repo
-
 pipeline {
     agent any
-
-    environment {
-        JAR_NAME = "java-sample-21-1.0.0.jar"
-        APP_DIR = "/opt/myapp"
-        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
-    }
-
     stages {
-
-        stage('Check Java & Maven') {
+        stage('Checkout') {
             steps {
-                sh 'java -version'
-                sh 'mvn -version'
+                git url: 'https://github.com/yogeshakn1k95/jenkins.git'
             }
         }
-
+        stage('Test') {
+            steps {
+                dir('javaapp-standalone') {
+                    sh 'mvn clean test'
+                }
+            }
+        }
         stage('Build') {
             steps {
-                dir('javaapp-pipeline') {
+                dir('javaapp-standalone') {
                     sh 'mvn clean package -DskipTests'
                 }
             }
         }
-
-        stage('Test') {
+        stage('Deploy') {
             steps {
-                dir('javaapp-pipeline') {
-                    sh 'mvn test'
+                dir('javaapp-standalone/target') {
+                    sh '''
+                        if pgrep -f "java -jar java-sample-21-1.0.0.jar" > /dev/null; then
+                            pkill -f "java -jar java-sample-21-1.0.0.jar"
+                            echo "App was running and has been killed"
+                        else
+                            echo "App is not running"
+                        fi
+                        JENKINS_NODE_COOKIE=dontKillme nohup java -jar java-sample-21-1.0.0.jar > app.log 2>&1 &
+                    '''
                 }
             }
-        }
-
-        stage('Deploy Locally') {
-            steps {
-                sh """
-                sudo mkdir -p ${APP_DIR}
-                sudo cp javaapp-pipeline/target/${JAR_NAME} ${APP_DIR}/myapp.jar
-
-                if pgrep -f "java -jar myapp.jar" > /dev/null; then
-                    sudo pkill -f "java -jar myapp.jar"
-                    echo "Old application stopped"
-                fi
-
-                sudo nohup java -jar ${APP_DIR}/myapp.jar > ${APP_DIR}/app.log 2>&1 &
-                echo "Application started locally"
-                """
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "Build, Test, and Local Deployment successful!"
-        }
-        failure {
-            echo "Pipeline failed!"
         }
     }
 }
