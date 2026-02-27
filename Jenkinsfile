@@ -1,22 +1,19 @@
 pipeline {
     agent any
 
-    // environment {
-    //     APP_SERVER = "3.110.201.22"
-    //     USER = "ec2-user"
-    //     JAR_NAME = "java-sample-21-1.0.0.jar"
-    //     APP_DIR = "/opt/myapp"
-    //     JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
-    //     PATH = "${JAVA_HOME}/bin:${env.PATH}"
-    // }
+    environment {
+        JAR_NAME = "java-sample-21-1.0.0.jar"
+        APP_DIR = "/opt/myapp"
+        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+    }
 
     stages {
 
-        stage('Check Java Version') {
+        stage('Check Java & Maven') {
             steps {
                 sh 'java -version'
                 sh 'mvn -version'
-                sh 'echo $JAVA_HOME'
             }
         }
 
@@ -36,33 +33,27 @@ pipeline {
             }
         }
 
-        stage('Deploy to App Server') {
+        stage('Deploy Locally') {
             steps {
-                sshagent(['app-server']) {
-                    sh """
-scp -o StrictHostKeyChecking=no javaapp-pipeline/target/${JAR_NAME} ec2-user@${APP_SERVER}:/tmp/
+                sh """
+                sudo mkdir -p ${APP_DIR}
+                sudo cp javaapp-pipeline/target/${JAR_NAME} ${APP_DIR}/myapp.jar
 
-ssh -o StrictHostKeyChecking=no ec2-user@${APP_SERVER} <<EOF
-sudo mkdir -p ${APP_DIR}
-sudo mv /tmp/${JAR_NAME} ${APP_DIR}/myapp.jar
+                if pgrep -f "java -jar myapp.jar" > /dev/null; then
+                    sudo pkill -f "java -jar myapp.jar"
+                    echo "Old application stopped"
+                fi
 
-if pgrep -f "java -jar myapp.jar" > /dev/null; then
-    sudo pkill -f "java -jar myapp.jar"
-    echo "Old application stopped"
-fi
-
-sudo nohup java -jar ${APP_DIR}/myapp.jar > ${APP_DIR}/app.log 2>&1 &
-echo "Application started"
-EOF
-"""
-                }
+                sudo nohup java -jar ${APP_DIR}/myapp.jar > ${APP_DIR}/app.log 2>&1 &
+                echo "Application started locally"
+                """
             }
         }
     }
 
     post {
         success {
-            echo "Build, Test, and Deployment successful!"
+            echo "Build, Test, and Local Deployment successful!"
         }
         failure {
             echo "Pipeline failed!"
